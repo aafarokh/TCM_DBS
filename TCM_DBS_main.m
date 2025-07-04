@@ -17,8 +17,8 @@ fx = 130;     % fx is the dbs frequency, set it to zero for no stimulation
 Ax = 125;      % Ax is dbs amplitude         
 dbsLayer = [3]; %the layer(s) that receives DBS directly (add to the array the desired layer number)
 dbsFid = 50;   %number of neurons in a layer to receive direct DBS injection 
-% dbsType = 'cDBS'; %conventional DBS, i.e., a continoius pulse train with a constant frequency 
-dbsType = 'DBS A'; %a pulse train with an initial phase of 20 pulses at 130 Hz and then switch to ~95 Hz.
+dbsType = 'cDBS'; %conventional DBS, i.e., a continoius pulse train with a constant frequency 
+% dbsType = 'DBS A'; %a pulse train with an initial phase of 20 pulses at 130 Hz and then switch to ~95 Hz.
 % dbsType = 'DBS B'; %a pulse train with an initial phase of 20 pulses at 130 Hz and then pause for 37 ms then start 4 pulses at 130 Hz and so forth.
 
 timeParams = initTimeParams(nN,nL,Ax,fx,dbsOnset,simTime,dbsType);
@@ -101,14 +101,11 @@ end
 toc;
 
 %% Output Figures
-%Later we should merge output fig and analysis together as
-%AnalysisWoutputFig
 
 % Output_Fig
 % thm_fig
 
-% Network_rasterp00lot;
-
+% Network_rasterplot;
 
 %%
 % figure(10)
@@ -120,80 +117,5 @@ toc;
 % zoom xon
 % xlabel('Time (ms)')
 % save('TCM_DBS_Sim_Results')
-
-%% ANALYSIS
-% TCM_DBS_Analysis
-
-%% Morgera's synchrony index analysis
-if fx~=0
-    pdFinit = dbsOnset*1000/timeParams.dt;
-    pdInit = pdFinit - 5*1000/timeParams.dt; %select the last 5 second of the PD state
-    dbsInit = dbsOnset*1000/timeParams.dt+1*1000/timeParams.dt; %select a portion during DBS 1 second after the onset
-    dbsFinit = dbsInit + 5*1000/timeParams.dt; %for 1 second
-    
-    %choose all the cortical pyramidal cells for the estimation
-    v_cortex_pd = [vRS1(1:2,pdInit:pdFinit);vIB1(1:2,pdInit:pdFinit);...
-                    vRS2(1:2,pdInit:pdFinit);...
-                    vRS3(1:2,pdInit:pdFinit);vIB3(1:2,pdInit:pdFinit);...
-                    % vFS4(:,pdInit:pdFinit); vLTS4(:,pdInit:pdFinit)...
-                    ];
-    v_cortex_dbs = [vRS1(1:2,dbsInit:dbsFinit);vIB1(1:2,dbsInit:dbsFinit);...
-                    vRS2(1:2,dbsInit:dbsFinit);...
-                    vRS3(1:2,dbsInit:dbsFinit);vIB3(1:2,dbsInit:dbsFinit);...
-                    % vFS4(:,dbsInit:dbsFinit); vLTS4(:,dbsInit:dbsFinit)
-                    ];
-
-    M_pd = Morgera_index(v_cortex_pd)
-    M_dbs = Morgera_index(v_cortex_dbs)
-else
-    pdFinit = simTime*1000/timeParams.dt;    %choose the whole simulation
-    pdInit = pdFinit - (simTime-1)*1000/timeParams.dt; %exclude the first second of the simulation
-
-    %choose all the cortical pyramidal cells for the estimation
-    v_cortex_pd = [vRS1(:,pdInit:pdFinit);vRS2(:,pdInit:pdFinit);vRS3(:,pdInit:pdFinit);vIB1(:,pdInit:pdFinit);vIB3(:,pdInit:pdFinit);...
-                    %vFS4(:,pdInit:pdFinit); vLTS4(:,pdInit:pdFinit)];
-                    ];
-    M = Morgera_index(v_cortex_pd)
-end
-
-%% Kuramoto's order parameter
-% v_test = [vRS1;vIB1;vRS2];
-% rho = Kuramoto(v_test, timeParams.dt);
-% figure; plot(rho)
-
-%% PSDs
-fs = 1000/timeParams.dt; frange = 1:200;
-
-if fx~=0
-    [pECoG1,fECoG1] = pwelch(ECoG(pdInit:pdFinit),fs,fs/2,frange,fs); %psd of the PD state ECoG
-    [pECoG2,fECoG2] = pwelch(ECoG(dbsInit:dbsFinit),fs,fs/2,frange,fs); %psd of the PD+DBS state ECoG
-%     pECoG2=pECoG2./sum(pECoG2); %normalize
-%     pECoG1=pECoG1./sum(pECoG1);
-    
-    BetaPower_pd = trapz(pECoG1(13:30));
-    BetaPower_pd_dbs = trapz(pECoG2(13:30));
-    DeltaP = BetaPower_pd - BetaPower_pd_dbs
-    
-    figure;
-    plot(fECoG1, pECoG1, 'LineWidth', 2); hold on
-    plot(fECoG2, pECoG2, 'LineWidth', 2); zoom xon
-%     xlim([5 200])
-    xlabel('Frequency (Hz)')
-    ylabel('PSD (a.u.)')
-    legend('DBS off',['DBS on (',num2str(fx),' Hz)'])
-else
-    [pECoG1,fECoG1] = pwelch(ECoG(pdInit:pdFinit),fs,fs/2,frange,fs); %psd of the PD state ECoG
-%     pECoG1=pECoG1./sum(pECoG1); %normalize
-
-    BetaPower_pd = trapz(pECoG1(13:30));
-
-%     figure;
-%     plot(fECoG1, pECoG1, 'LineWidth', 2); hold on
-% %     xlim([5 200])
-%     xlabel('Frequency (Hz)')
-%     ylabel('PSD (a.u.)')
-%     legend('DBS off')
-end
-% set(gca,'FontSize',12,'FontWeight','bold')
 
 beep
