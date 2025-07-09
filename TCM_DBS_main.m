@@ -102,13 +102,10 @@ toc;
 
 %% Output Figures
 
-% Output_Fig
-% thm_fig
+Network_rasterplot;
 
-% Network_rasterplot;
 
-%%
-% figure(10)
+% figure(2)
 % title('Rt example APs'); hold on
 % plot(timeParams.tVec,vTR6(1,:),'k'); hold on
 % plot(timeParams.tVec,vTR6(10,:)+100*ones(1,numel(timeParams.tVec)),'k'); hold on
@@ -116,6 +113,9 @@ toc;
 % plot(timeParams.tVec,vTR6(40,:)+300*ones(1,numel(timeParams.tVec)),'k'); hold on
 % zoom xon
 % xlabel('Time (ms)')
+
+%%
+
 % save('TCM_DBS_Sim_Results')
 
 beep
